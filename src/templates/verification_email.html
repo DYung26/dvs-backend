@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link href="https://fonts.cdnfonts.com/css/br-firma" rel="stylesheet" />
+  <title>OTP Verification</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: "BR Firma", sans-serif;
+      font-size: 16px;
+      background-color: #f4f4f4;
+    }
+    .container {
+      max-width: 600px;
+      margin: 30px auto;
+      background-color: #ffffff;
+      padding: 40px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+    .header {
+      text-align: center;
+    }
+    .otp {
+      display: inline-block;
+      padding: 16px 32px;
+      background-color: #EC7C30;
+      color: white;
+      font-size: 24px;
+      font-weight: bold;
+      letter-spacing: 4px;
+      border-radius: 6px;
+      margin: 20px 0;
+    }
+    .footer {
+      text-align: center;
+      margin-top: 40px;
+      font-size: 14px;
+      color: #666666;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <svg width="37" height="41" viewBox="0 0 37 41" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="28.041" y="8.48047" width="7.42446" height="8.8335" fill="#EC7C30" />
+        <path fill-rule="evenodd" clip-rule="evenodd" d="M36.2897 3C36.2897 1.34315 34.9466 0 33.2897 0H16.1914C14.5346 0 13.1914 1.34315 13.1914 3V31.4191C13.1914 33.076 14.5346 34.4191 16.1914 34.4191H33.2897C34.9466 34.4191 36.2897 33.076 36.2897 31.4191V3ZM26.043 3.44141C21.2907 3.44141 17.3594 7.2939 17.3594 12.0462C17.3594 16.7985 21.2907 20.651 26.043 20.651C30.7953 20.651 34.7266 16.7985 34.7266 12.0462C34.7266 7.2939 30.7953 3.44141 26.043 3.44141Z" fill="#EC7C30" />
+        <rect x="0.492188" y="4.56445" width="30.3477" height="35.8062" rx="4.5" fill="white" stroke="black" />
+        <line x1="5.76758" y1="15.8281" x2="20.6165" y2="15.8281" stroke="black" stroke-width="1.5" />
+        <line x1="8.24219" y1="20.9805" x2="23.0911" y2="20.9805" stroke="black" stroke-width="1.5" />
+        <line x1="8.24219" y1="26.1328" x2="18.1415" y2="26.1328" stroke="black" stroke-width="1.5" />
+      </svg>
+    </div>
+
+    <h1 style="color: #23203d; font-size: 24px; font-weight: 600; text-align: center; margin-top: 30px;">Your OTP Code</h1>
+
+    <p style="color: #23203d; font-size: 16px; line-height: 24px; text-align: center;">
+      Hello {{ first_name }},
+    </p>
+    <p style="font-size: 16px; line-height: 24px; text-align: center; margin: 20px 0;">
+      Use the code below to complete your verification process. This code is valid for a limited time only.
+    </p>
+
+    <div style="text-align: center;">
+      <div class="otp">{{ otp }}</div>
+    </div>
+
+    <p style="color: #23203d; font-size: 16px; line-height: 24px; text-align: center;">
+      If you did not initiate this request, please ignore this email.
+    </p>
+
+    <p style="color: #23203d; font-size: 16px; font-weight: bold; text-align: center; margin-top: 30px;">
+      {{ email_from }} Team
+    </p>
+
+    <div class="footer">
+      &copy; {{ email_from }} Team — All rights reserved.
+    </div>
+  </div>
+</body>
+</html>
