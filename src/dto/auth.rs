@@ -1,5 +1,6 @@
 use serde::{Deserialize, Serialize};
 use crate::models::user::User;
+use uuid::Uuid;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct LoginRequest {
@@ -21,3 +22,20 @@ pub struct AuthResponse {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub access_token: Option<String>,
 }
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct TokenPayload {
+    pub user_id: Uuid,
+    pub email: String,
+
+    #[serde(flatten)]
+    pub registered: Claims,
+}
+
+#[derive(Default, Debug, Serialize, Deserialize)]
+pub struct Claims {
+    // pub sub: String,           // subject (user ID, etc.)
+    pub exp: usize,            // expiration timestamp
+    pub iat: usize,            // issued-at timestamp
+}
+

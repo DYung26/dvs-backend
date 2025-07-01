@@ -17,6 +17,7 @@ use crate::{
         error::AppError,
         password::{hash_password, verify_password},
         otp::generate_otp,
+        jwt::generate_token,
     }
 };
 use axum::{http::StatusCode, Json};
@@ -67,8 +68,8 @@ impl AuthService {
         if !is_valid {
             return Err(AppError::unauthorized());
         }
-        
-        let access_token = Some("".to_string());
+
+        let access_token = Some(generate_token(user.id, user.email.clone(), false)?);
 
         Ok(AuthResponse{
             user,

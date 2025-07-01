@@ -7,6 +7,7 @@ use serde::Serialize;
 use std::{error::Error, fmt};
 use diesel::result::Error as DieselError;
 use tokio::task::JoinError;
+use jsonwebtoken::errors::Error as JwtError;
 
 #[derive(Debug)]
 pub struct AppError {
@@ -101,6 +102,16 @@ impl From<JoinError> for AppError {
         AppError::new(
             StatusCode::INTERNAL_SERVER_ERROR,
             "Join error when executing blocking task",
+            Some(err.to_string()),
+        )
+    }
+}
+
+impl From<JwtError> for AppError {
+    fn from(err: JwtError) -> Self {
+        AppError::new(
+            StatusCode::INTERNAL_SERVER_ERROR,
+            &format!("JWT error: {}", err),
             Some(err.to_string()),
         )
     }

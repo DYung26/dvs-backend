@@ -15,6 +15,7 @@ mod services;
 mod models;
 mod dto;
 mod utils;
+mod middlewares;
 
 use crate::{
     db::{init_db, PgPool},
