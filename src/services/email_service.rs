@@ -95,14 +95,19 @@ impl EmailService {
         let html = tera.render("verification_email.html", &context).map_err(|e| {
             AppError::new(StatusCode::INTERNAL_SERVER_ERROR, "Template rendering failed", Some(e.to_string()))
         })?;
+        println!("{}", html);
 
         let subject = "Verify your Email";
+        let plain_text = format!(
+            "Hi {},\n\nYour OTP is: {}\n\nIf you didn’t request this, please ignore this email.",
+            msg.to_name, msg.otp
+        );
 
         self.send_mail(EmailMessage {
             to: msg.to.clone(),
             to_name: msg.to_name.clone(),
             subject: Some(subject.to_string()),
-            plain_text: Some("".to_string()),
+            plain_text: Some(plain_text.to_string()),
             html_body: Some(html),
             otp: msg.otp.clone(),
         }).await

@@ -12,7 +12,7 @@ use crate::{
 pub fn user_routes() -> Router<AppState> {
     Router::new()
         .route(
-            "/:id",
+            "/",
             get(get_user_handler),
         )
 }
