@@ -1,6 +1,8 @@
 use std::env;
 use std::sync::Arc;
 
+use axum::http::Method;
+use tower_http::cors::{CorsLayer, Any};
 use tokio::net::TcpListener;
 use dotenvy::dotenv;
 
@@ -61,7 +63,15 @@ async fn main() {
         user_handler,
     };
 
-    let app = create_router().with_state(state);
+    let cors_layer = CorsLayer::new()
+        .allow_origin(Any)
+        .allow_methods([Method::GET, Method::POST, Method::PUT, Method::DELETE])
+        .allow_headers(Any); // [AUTHORIZATION, ACCEPT]
+        // .allow_credentials(true);
+
+    let app = create_router()
+        .layer(cors_layer)
+        .with_state(state);
 
     let listener = TcpListener::bind("127.0.0.1:3000").await.unwrap();
     println!("🚀 Server running at http://{}", listener.local_addr().unwrap());
