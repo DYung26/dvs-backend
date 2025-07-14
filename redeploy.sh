@@ -24,7 +24,7 @@ else
 fi
 
 echo "🚚 Moving binary to $BIN_PATH..."
-rm "$BIN_PATH"
+rm -f "$BIN_PATH"
 sudo mv "$BUILD_OUTPUT" "$BIN_PATH"
 sudo chmod +x "$BIN_PATH"
 
