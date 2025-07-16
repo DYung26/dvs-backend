@@ -6,7 +6,10 @@ use crate::{
         otp_repo::OTPRepository,
     },
     dto::{
-        auth::{LoginRequest, SignUpRequest, AuthResponse},
+        auth::{
+            LoginRequest, SignUpRequest, AuthResponse,
+            NonceRequest, NonceResponse, WalletLoginRequest,
+        },
         email::EmailMessage,
     },
     models::{
@@ -18,25 +21,31 @@ use crate::{
         password::{hash_password, verify_password},
         otp::generate_otp,
         jwt::generate_token,
-    }
+    },
+    state::NonceStore,
 };
 use axum::{http::StatusCode, Json};
+use uuid::Uuid;
+use ethers::utils::hash_message;
+use ethers::types::{Signature,H160};
 
 pub struct AuthService {
     repo: Arc<UserRepository>,
     otp_repo: Arc<OTPRepository>,
     email_service: Arc<EmailService>,
+    nonce_store: NonceStore,
 }
 
 impl AuthService {
     pub fn new(
         repo: Arc<UserRepository>, otp_repo: Arc<OTPRepository>,
-        email_service: Arc<EmailService>,
+        email_service: Arc<EmailService>, nonce_store: NonceStore,
     ) -> Self {
         Self {
             repo,
             otp_repo,
             email_service,
+            nonce_store,
         }
     }
 
@@ -109,6 +118,7 @@ impl AuthService {
             username: username.clone(),
             email: email.clone(),
             password: hashed_password,
+            address: None,
         };
 
         let user = self
@@ -165,6 +175,76 @@ impl AuthService {
         Ok(AuthResponse{
             user,
             access_token: None,
+        })
+    }
+
+    pub async fn get_nonce(
+        &self,
+        Json(NonceRequest { address }): Json<NonceRequest>,
+    ) -> Result<NonceResponse, AppError> {
+        let nonce = Uuid::new_v4().to_string();
+
+        let mut store = self.nonce_store.lock().await;
+        store.insert(address.clone(), nonce.clone());
+
+        Ok(NonceResponse{
+            nonce,
+        })
+    }
+
+    pub async fn wallet_login(
+        &self,
+        Json(WalletLoginRequest { address, signature }): Json<WalletLoginRequest>,
+    ) -> Result<AuthResponse, AppError> {
+        // Get nonce
+        let mut store = self.nonce_store.lock().await;
+        let nonce = store.get(&address).ok_or_else(|| {
+            AppError::new(StatusCode::UNAUTHORIZED, "Nonce not found or expired", None)
+        })?;
+
+        // Rebuild message
+        let message = format!("Login to DVS with this one-time code: {}", nonce);
+
+        // Recover address
+        let message_hash = hash_message(message); // EIP-191 signing
+        let signature = signature.parse::<Signature>()
+            .map_err(|_| AppError::new(StatusCode::UNAUTHORIZED, "Invalid signature format", None))?;
+
+        let recovered = signature.recover(message_hash)
+            .map_err(|_| AppError::new(StatusCode::UNAUTHORIZED, "Failed to recover address", None))?;
+
+        // Validate address
+        let parsed_address = address.parse::<H160>().map_err(|e| {
+            AppError::new(StatusCode::BAD_REQUEST, "Invalid hex in address", Some(e.to_string()))
+        })?;
+        if recovered != parsed_address {
+            return Err(AppError::new(StatusCode::UNAUTHORIZED, "Signature does not match address", None));
+        }
+
+        let user = self
+            .repo
+            .find_user_by_address(address.clone())
+            .await
+            .map_err(|e| {
+                let msg = format!("DB error: {:?}", e);
+                AppError::new( // testing out explicit AppError
+                    StatusCode::INTERNAL_SERVER_ERROR,
+                    msg,
+                    Some(e.to_string()),
+                )
+            })?
+            .ok_or_else(|| {
+                let msg = format!("User with address {} not found", address);
+                AppError::not_found(&msg)
+            })?;
+
+        let access_token = Some(generate_token(user.id, user.email.clone(), false)?);
+
+        store.remove(&address);
+
+        Ok(AuthResponse{
+            user,
+            access_token,
         })
     }
 }

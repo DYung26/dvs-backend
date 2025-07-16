@@ -12,6 +12,8 @@ pub struct User {
 
     #[serde(skip_serializing)]
     pub password: String,
+
+    pub address: Option<String>,
     // pub role: UserRole,
 }
 
@@ -21,13 +23,15 @@ pub struct NewUser {
     pub username: String,
     pub email: String,
     pub password: String,
+    pub address: Option<String>,
 }
 
-#[derive(Debug, AsChangeset)]
+#[derive(Debug, Default, AsChangeset)]
 #[diesel(table_name = users)]
 pub struct UpdateUser {
     pub username: Option<String>,
     pub email: Option<String>,
+    pub address: Option<String>,
 }
 
 /*

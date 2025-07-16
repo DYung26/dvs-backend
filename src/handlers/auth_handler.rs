@@ -1,11 +1,17 @@
 use axum::Json;
 use std::sync::Arc;
-// use uuid::Uuid;
 
-use crate::services::auth_service::AuthService;
-// use crate::models::user::User;
-use crate::dto::{auth::{LoginRequest, SignUpRequest, AuthResponse}, response::ApiResponse};
-use crate::utils::error::AppError;
+use crate::{
+    services::auth_service::AuthService,
+    dto::{
+        auth::{
+            LoginRequest, SignUpRequest, AuthResponse,
+            NonceRequest, NonceResponse, WalletLoginRequest,
+        },
+        response::ApiResponse,
+    },
+    utils::error::AppError,
+};
 
 pub struct AuthHandler {
     service: Arc<AuthService>,
@@ -50,6 +56,41 @@ impl AuthHandler {
                 access_token,
             },
             "User signed up successfully",
+        )))
+    }
+
+    pub async fn get_nonce(
+        &self,
+        payload: NonceRequest,
+    ) -> Result<Json<ApiResponse<NonceResponse>>, AppError> {
+        let NonceResponse { nonce } = self
+            .service
+            .get_nonce(Json(payload))
+            .await?;
+
+        Ok(Json(ApiResponse::success(
+            NonceResponse {
+                nonce,
+            },
+            "Nonce generated successfully",
+        )))
+    }
+
+    pub async fn wallet_login(
+        &self,
+        payload: WalletLoginRequest,
+    ) -> Result<Json<ApiResponse<AuthResponse>>, AppError> {
+        let AuthResponse { user, access_token } = self
+            .service
+            .wallet_login(Json(payload))
+            .await?;
+
+        Ok(Json(ApiResponse::success(
+            AuthResponse {
+                user,
+                access_token,
+            },
+            "User logged in successfully",
         )))
     }
 }

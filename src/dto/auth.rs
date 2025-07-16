@@ -39,3 +39,18 @@ pub struct Claims {
     pub iat: usize,            // issued-at timestamp
 }
 
+#[derive(Debug, Serialize, Deserialize)]
+pub struct NonceRequest {
+    pub address: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct NonceResponse {
+    pub nonce: String,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct WalletLoginRequest {
+    pub address: String,
+    pub signature: String,
+}

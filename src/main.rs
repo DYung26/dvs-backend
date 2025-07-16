@@ -1,5 +1,9 @@
-use std::env;
-use std::sync::Arc;
+use std::{
+    env,
+    sync::Arc,
+    collections::HashMap,
+};
+use tokio::sync::Mutex;
 
 use axum::http::Method;
 use tower_http::cors::{CorsLayer, Any};
@@ -31,12 +35,14 @@ use crate::{
         auth_service::AuthService, user_service::UserService,
         email_service::EmailService,
     },
-    state::AppState,
+    state::{AppState, NonceStore},
 };
 
 #[tokio::main]
 async fn main() {
     dotenv().ok();
+
+    let nonce_store: NonceStore = Arc::new(Mutex::new(HashMap::new()));
 
     let db_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
     let db = Arc::<PgPool>::new(init_db(&db_url).await);
@@ -50,10 +56,11 @@ async fn main() {
 
     let email_service = Arc::new(EmailService::new(api_key, from_email, from_name));
     let auth_service = Arc::new(AuthService::new(
-            user_repo.clone(), otp_repo.clone(), email_service.clone(),
+            user_repo.clone(), otp_repo.clone(),
+            email_service.clone(), nonce_store.clone(),
         )
     );
-    let user_service = Arc::new(UserService::new(user_repo.clone()));
+    let user_service = Arc::new(UserService::new(user_repo.clone(), nonce_store.clone()));
 
     let auth_handler = Arc::new(AuthHandler::new(auth_service));
     let user_handler = Arc::new(UserHandler::new(user_service));

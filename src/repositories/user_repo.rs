@@ -63,6 +63,21 @@ impl UserRepository {
         Ok(result)
     }
 
+    pub async fn find_user_by_address(&self, input_address: String) -> Result<Option<User>, AppError> {
+        let mut conn = self.get_conn()?;
+
+        let result = tokio::task::spawn_blocking(move || {
+            users
+                .filter(address.eq(&input_address))
+                .first::<User>(&mut conn)
+                .optional()
+        })
+        .await
+        .map_err(AppError::from)??;
+
+        Ok(result)
+    }
+
     pub async fn update_user(&self, user_id: Uuid, updates: UpdateUser) -> Result<User, AppError> {
         let mut conn = self.get_conn()?;
 

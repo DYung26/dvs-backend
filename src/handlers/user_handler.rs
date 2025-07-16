@@ -3,7 +3,10 @@ use axum::Json;
 use uuid::Uuid;
 use crate::{
     models::user::User,
-    dto::response::ApiResponse,
+    dto::{
+        response::ApiResponse,
+        auth::WalletLoginRequest,
+    },
     services::user_service::UserService,
     utils::error::AppError,
 };
@@ -22,6 +25,22 @@ impl UserHandler {
         Ok(Json(ApiResponse::success(
             user,
             "User retrieved successfully",
+        )))
+    }
+
+    pub async fn connect_wallet(
+        &self,
+        user_id: Uuid,
+        payload: WalletLoginRequest
+    ) -> Result<Json<ApiResponse<()>>, AppError> {
+        self
+            .service
+            .connect_wallet(user_id, Json(payload))
+            .await?;
+
+        Ok(Json(ApiResponse::success(
+            (),
+            "Wallet connected successfully",
         )))
     }
 }
