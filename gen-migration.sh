@@ -4,7 +4,7 @@
 # diesel setup
 # timestamp=$(date +%Y%m%d%H%M%S)
 # name=${1:-migration}
-# echo "diesel migration generate <name>"
+# echo "diesel migration generate <${timestamp}_${name}>"
 # diesel migration generate "${timestamp}_${name}"
 echo "diesel migration run"
 diesel migration run
